@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec  6 16:42:10 2021
-
-@author: Himanshu Singh
-"""
-
 import sys
 import json
 #from jetson_voice import ASR, AudioInput, ConfigArgParser, list_audio_devices
