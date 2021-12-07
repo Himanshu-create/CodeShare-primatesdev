@@ -1,9 +1,36 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Dec  6 16:42:10 2021
+
+@author: Himanshu Singh
+"""
+
 import sys
 import json
 #from jetson_voice import ASR, AudioInput, ConfigArgParser, list_audio_devices
-    
-class ConfigArgParser(argparse.ArgumentParser):
+
+def list_models():
     """
+    Print out the models available.
+    """
+    manifest = load_models_manifest()
+    
+    print('')
+    print('----------------------------------------------------')
+    print(f" Models")
+    print('----------------------------------------------------')
+
+    for key in list(manifest):
+        if manifest[key]['type'] != 'model':
+            manifest.pop(key)
+            
+    pprint.pprint(manifest)
+
+    print('')
+
+
+class ConfigArgParser(argparse.ArgumentParser):
+    """ 
     ArgumentParser that provides global configuration options.
     """
     def __init__(self, *args, **kwargs):
@@ -44,9 +71,9 @@ class ConfigArgParser(argparse.ArgumentParser):
         if args.global_config:
             global_config.load(args.global_config)
             
-        if args.list_models:
-            from .resource import list_models
-            list_models()
+#       if args.list_models:
+#           from .resource import list_models
+#           list_models()
             
         logging.debug(f'global config:\n{global_config}')    
         return args
@@ -113,7 +140,26 @@ if args.list_devices:
     list_audio_devices()
     sys.exit()
     
+def find_resource(path):
+    """
+    Find a resource by checking some common paths.
+    """
+    if os.path.exists(path):
+        return path
+        
+    search_dirs = [global_config.model_dir,
+                   os.path.join(global_config.model_dir, 'asr'),
+                   os.path.join(global_config.model_dir, 'nlp'),
+                   os.path.join(global_config.model_dir, 'tts')]
     
+    for search_dir in search_dirs:
+        search_path = os.path.join(search_dir, path)
+        
+        if os.path.exists(search_path):
+            return search_path
+    
+    raise IOError(f"failed to locate resource '{path}'")
+  
 class ConfigDict(dict):
     """
     Configuration dict that can be loaded from JSON and has members
@@ -152,7 +198,7 @@ class ConfigDict(dict):
         """
         Load from JSON file.
         """
-        from .resource import find_resource  # import here to avoid circular dependency
+        #from .resource import find_resource  # import here to avoid circular dependency
         
         path = find_resource(path)
         self.__dict__['path'] = path
@@ -266,7 +312,7 @@ def load_models_manifest(path=None):
 
 def find_model_manifest(name):
     """
-    Find a model manifest entry by name / alias.
+    Find a model manifest entry by name / alias. 
     """
     manifest = load_models_manifest()
     
