@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 import time
 
 
+#img from camera frame by frame  
+
+
 def viewScreen(speaking = 0, imgs = []):
     h = 720 #height of frame
     w = 1080 #width of frame
@@ -77,23 +80,20 @@ def viewScreen(speaking = 0, imgs = []):
         img1 = cv2.resize(img1,((w -2*(l +gw))//3,h//3-t-gh//2))
         img2 = cv2.resize(img2,((w -2*(l +gw))//3,h//3-t-gh//2))
         img3 = cv2.resize(img3,((w -2*(l +gw))//3,h//3-t-gh//2))
+        img4 = cv2.resize(img4,((w -2*(l +gw))//3,h//3-t-gh//2))
+        img5 = cv2.resize(img5,((w -2*(l +gw))//3,h//3-t-gh//2))
         
-#        img4 = cv2.resize(img4,(w//2 - l - gw//2, h - 2*t -gh - img1.shape[0]))
-#        img5 = cv2.resize(img5,(w//2 - l - gw//2, h - 2*t -gh - img1.shape[0]))
         
-        img4 = cv2.resize(img4,(w//2 - l - gw//2,h//2 - t))
-        img5 = cv2.resize(img5,(w//2 - l - gw//2,h//2 - t))
+        dh = (h - 2*(h//3-t-gh//2))//3
         
-        frame[t:t+img1.shape[0],l:l+img1.shape[1]] = img1
-        frame[t:t+img1.shape[0], l+img1.shape[1]+gw:l+2*img1.shape[1]+gw] = img2
-        frame[t:t+img1.shape[0],l+2*img1.shape[1]+2*gw:l+3*img1.shape[1]+2*gw] = img3
+        frame[dh:dh+img1.shape[0],l:l+img1.shape[1]] = img1
+        frame[dh:dh+img1.shape[0], l+img1.shape[1]+gw:l+2*img1.shape[1]+gw] = img2
+        frame[dh:dh+img1.shape[0],l+2*img1.shape[1]+2*gw:l+3*img1.shape[1]+2*gw] = img3
         
-#        frame[t+img1.shape[0] + gh:t+img1.shape[0] + gh + img4.shape[0],l:l+img4.shape[1]] = img4
-#        frame[t+img1.shape[0] + gh:t+img1.shape[0] + gh + img4.shape[0],l+gw+img4.shape[1]:l+gw+2*img4.shape[1]] = img5
-        
-        hx = t + img1.shape[0] + ((h- (t + img1.shape[0])) - img4.shape[0])//2
-        frame[hx:hx+img4.shape[0],l:l+img4.shape[1]] = img4
-        frame[hx:hx+img4.shape[0],l+img4.shape[1] + gw :l+2*img4.shape[1] + gw ] = img5
+        hx = 2*dh + (h//3-t-gh//2)
+        wx = (w - 2*(img4.shape[1]) - gw)//2
+        frame[hx:hx+img4.shape[0],wx:wx+img4.shape[1]] = img4
+        frame[hx:hx+img4.shape[0],wx+img4.shape[1] + gw :wx+2*img4.shape[1] + gw ] = img5
         
     else:
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -111,9 +111,14 @@ p1 = r"C:\Users\Himanshu Singh\Desktop\img\p.jpg"
 img1 = cv2.imread(p1)
 #img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB) 
 size = (1080, 720)
-result = cv2.VideoWriter(r"C:\Users\Himanshu Singh\Desktop\img\Result_Video.avi", 
+result = cv2.VideoWriter(r"C:\Users\Himanshu Singh\Desktop\img\Result_Video_Cam.avi", 
                          cv2.VideoWriter_fourcc(*'MJPG'),
-                         10, size)
+                         25, size)
+
+video = cv2.VideoCapture(2)
+if (video.isOpened() == False): 
+    print("Error reading video file")
+    assert False
 
 tp= time.time()
 print(tp)
@@ -123,13 +128,16 @@ i = 0
 while(True):
     if(i>= len(k)):
         break
+    ret, img1 = video.read()
+    
     frame = viewScreen(k[i],[img1,img1,img1,img1,img1])
     result.write(frame)
-    if(time.time() - tp >= 0.25):
+    if(time.time() - tp >= 1):
         i += 1
         tp = time.time()
         print(i)
 result.release()
+video.release()
 
 
 
